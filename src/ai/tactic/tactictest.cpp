@@ -4,8 +4,11 @@
 TacticTest::TacticTest(WorldModel *worldmodel, QObject *parent) :
     Tactic("TacticTest", worldmodel, parent)
 {
-    numberOfInvalidRanges=0;
-    numberOfValidRanges=0;
+    canKick = false;
+    firstKick = false;
+    kicked = false;
+    timer = new QTimer();
+    connect(timer,SIGNAL(timeout()),this,SLOT(timerEvent()));
 }
 
 RobotCommand TacticTest::getCommand()
@@ -15,27 +18,70 @@ RobotCommand TacticTest::getCommand()
 
     rc.maxSpeed = 2;
 
-    float deg=atan((0-wm->ball.pos.loc.y)/(3025-wm->ball.pos.loc.x));
+//    if(!firstKick)
+//    {
+//        rc = goBehindBall();
 
-    if(!wm->kn->ReachedToPos(wm->ourRobot[id].pos, rc.fin_pos, 30, 180))
+//        //if(canKick)
+//        qDebug()<<"Distance:"<<(wm->ourRobot[id].pos.loc-wm->ball.pos.loc).length();
+//        if(wm->kn->CanKick(wm->ourRobot[id].pos,wm->ball.pos.loc))
+//        {
+//            qDebug()<<"Kicked";
+//            rc.kickspeedx = 1;
+//            firstKick = true;
+//           // kicked = true;
+//        }
+//    }
+//    else
+//    {
+//        rc.fin_pos = wm->ourRobot[id].pos;
+//        if( (wm->ball.pos.loc-wm->ourRobot[id].pos.loc).length() > 120)
+//        {
+//            firstKick = true;
+//            kicked = true;
+//        }
+//    }
+    qDebug()<<"kicked:"<<kicked;
+    qDebug()<<"speed:"<<wm->ball.vel.loc.length();
+    if(!kicked)
     {
-        rc.fin_pos.loc= {wm->ball.pos.loc.x-110*cos(deg),wm->ball.pos.loc.y-110*sin(deg)};
-        rc.fin_pos.dir=atan((0-wm->ball.pos.loc.y)/(3025-wm->ball.pos.loc.x));
-    }
-
-
-       if(!wm->kn->ReachedToPos(wm->ourRobot[id].pos, rc.fin_pos, 20, 2))
-       {
-           double test=findBestPoint();
-           qDebug()<<"Angle:"<<test;
-           rc.fin_pos.dir=test;
-       }
-        rc.fin_pos.loc= {wm->ball.pos.loc.x-100*cos(deg),wm->ball.pos.loc.y-100*sin(deg)};
-
-        if(wm->kn->ReachedToPos(wm->ourRobot[id].pos, rc.fin_pos, 10, 4))
+        if(!firstKick)
         {
-            rc.kickspeedx=5;
+            rc = goBehindBall();
+
+            //if(canKick)
+            qDebug()<<"CanKick:"<<wm->kn->CanKick(wm->ourRobot[id].pos,wm->ball.pos.loc);
+            if(wm->kn->CanKick(wm->ourRobot[id].pos,wm->ball.pos.loc))
+            {
+                qDebug()<<"KickedKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK";
+                timer->start(300);
+                rc.kickspeedx = 2.5;//50;
+                firstKick = true;
+                // kicked = true;
+            }
         }
+        else
+        {
+            rc.fin_pos = wm->ourRobot[id].pos;
+//            if(wm->ball.vel.loc.length() > 0.09)
+//            {
+//                qDebug()<<"INIF";
+//                kicked = true;
+//            }
+//            else
+//            {
+//                firstKick = false;
+//            }
+        }
+    }
+    else
+    {
+        rc.fin_pos = wm->ourRobot[id].pos;
+//        if(wm->ball.pos.loc.x>1800)
+//        {
+//            kicked = false;
+//        }
+    }
 
 
     rc.useNav = true;
@@ -44,137 +90,94 @@ RobotCommand TacticTest::getCommand()
     return rc;
 }
 
-void TacticTest::findCriticalPlayer()
+RobotCommand TacticTest::goBehindBall()
 {
-    QList<int> our_agents = wm->kn->ActiveAgents();
-    important_opp_agents.clear();
-    important_our_agents.clear();
+    RobotCommand rc;
+    canKick=false;
 
-    //---------ActiveOppAgents
-    QList<int> opp_agents;
-    for(int i=0; i< PLAYERS_MAX_NUM; i++)
-        if(wm->oppRobot[i].isValid)
-            opp_agents.append(i);
-    //---------------------
+    rc.maxSpeed = 1;
 
-    QList<int> active_our_agents;
-    QList<int> active_opp_agents;
+    int index = findBestPlayerForPass();
 
-    foreach(int i,our_agents)
-    {
-        if(wm->ourRobot[i].pos.loc.x>wm->ourRobot[id].pos.loc.x)
-        {
-            active_our_agents.append(i);
-        }
-    }
+    Vector2D target(wm->ourRobot[index].pos.loc.x,wm->ourRobot[index].pos.loc.y);
+    Vector2D goal(target.x+500*cos(target.dir().DEG2RAD),target.y+500*sin(target.dir().DEG2RAD));
 
-    foreach(int i,opp_agents)
-    {
-        if(wm->oppRobot[i].pos.loc.x>wm->ourRobot[id].pos.loc.x)
-        {
-            active_opp_agents.append(i);
-        }
-    }
+//    float deg=atan((goal.y-wm->ball.pos.loc.y)/(goal.x-wm->ball.pos.loc.x));
 
-    Line2D down(Field::oppGoalPost_R,wm->ball.pos.loc);
-    Line2D up(Field::oppGoalPost_L,wm->ball.pos.loc);
+//    Vector2D vec(wm->ourRobot[index].pos.loc.x+500-wm->ball.pos.loc.y,wm->ourRobot[index].pos.loc.y-wm->ball.pos.loc.x);
 
-    foreach (int i, active_opp_agents)
-    {
-        double Ymin=wm->ball.pos.loc.y+(-down.a()/down.b())*(wm->oppRobot[i].pos.loc.x-wm->ball.pos.loc.x);
-        double Ymax=wm->ball.pos.loc.y+tan(-up.a()/up.b())*(wm->oppRobot[i].pos.loc.x-wm->ball.pos.loc.x);
 
-        if(wm->oppRobot[i].pos.loc.y>Ymin && wm->oppRobot[i].pos.loc.y<Ymax)
-        {
-            important_opp_agents.append(i);
-        }
-    }
+//    if(goal.x < wm->ball.pos.loc.x)
+//    {
+//        if(goal.y > wm->ball.pos.loc.y)
+//            deg = M_PI + deg;
+//        else
+//        {
+//            deg = -M_PI + deg;
+//        }
+//    }
+    //vec.setLength(100);
+    rc.fin_pos = wm->kn->AdjustKickPoint(wm->ball.pos.loc,goal);
+    //rc.fin_pos.dir = vec.dir().DEG2RAD;
 
-    foreach (int i, active_our_agents)
-    {
-        double Ymin=wm->ball.pos.loc.y+(-down.a()/down.b())*(wm->ourRobot[i].pos.loc.x-wm->ball.pos.loc.x);
-        double Ymax=wm->ball.pos.loc.y+tan(-up.a()/up.b())*(wm->ourRobot[i].pos.loc.x-wm->ball.pos.loc.x);
+//    if(!wm->kn->ReachedToPos(wm->ourRobot[id].pos, rc.fin_pos, 30, 180))
+//    {
+//        rc.fin_pos.loc= {wm->ball.pos.loc.x-110*cos(deg),wm->ball.pos.loc.y-110*sin(deg)};
+//        //rc.fin_pos.dir=atan((wm->ourRobot[index].pos.loc.y-wm->ball.pos.loc.y)/(wm->ourRobot[index].pos.loc.x-wm->ball.pos.loc.x));
+//        rc.fin_pos.dir=deg;
+//    }
 
-        if(wm->ourRobot[i].pos.loc.y>Ymin && wm->ourRobot[i].pos.loc.y<Ymax)
-        {
-            important_our_agents.append(i);
-        }
-    }
+
+//   if(!wm->kn->ReachedToPos(wm->ourRobot[id].pos, rc.fin_pos, 20, 2))
+//   {
+//       //rc.fin_pos.dir = M_PI/2;
+//   }
+//    rc.fin_pos.loc= {wm->ball.pos.loc.x-100*cos(deg),wm->ball.pos.loc.y-100*sin(deg)};
+
+//    if(wm->kn->ReachedToPos(wm->ourRobot[id].pos, rc.fin_pos, 10, 4))
+//    {
+//        canKick=true;
+//    }
+
+    return rc;
 }
 
-void TacticTest::findInvalidRanges()
+int TacticTest::findBestPlayerForPass()
 {
-    numberOfInvalidRanges=0;
-    uGoal=(atan( (Field::oppGoalPost_L.y-wm->ball.pos.loc.y)/(Field::oppGoalPost_L.x-wm->ball.pos.loc.x)));
-    dGoal=(atan( (Field::oppGoalPost_R.y-wm->ball.pos.loc.y)/(Field::oppGoalPost_R.x-wm->ball.pos.loc.x)));
-    foreach (int i, important_opp_agents)
-    {
-        double alpha=asin(ROBOT_RADIUS/wm->ball.pos.loc.dist(wm->oppRobot[i].pos.loc));
-        double beta=atan((wm->oppRobot[i].pos.loc.y-wm->ball.pos.loc.y)/(wm->oppRobot[i].pos.loc.x-wm->ball.pos.loc.x));
-        angle[numberOfInvalidRanges][1]=beta+alpha;
-        angle[numberOfInvalidRanges][0]=beta-alpha;
-        numberOfInvalidRanges++;
-    }
-    foreach (int i, important_our_agents)
-    {
-        double alpha=asin(ROBOT_RADIUS/wm->ball.pos.loc.dist(wm->ourRobot[i].pos.loc));
-        double beta=atan((wm->ourRobot[i].pos.loc.y-wm->ball.pos.loc.y)/(wm->ourRobot[i].pos.loc.x-wm->ball.pos.loc.x));
-        angle[numberOfInvalidRanges][1]=beta+alpha;
-        angle[numberOfInvalidRanges][0]=beta-alpha;
-        numberOfInvalidRanges++;
-    }
-}
+    int index = -1;
+    double min = 10000;
 
-void TacticTest::sortInvalidRanges()
-{
-    for(int i=0;i<numberOfInvalidRanges;i++)
+    for(int i=0;i<PLAYERS_MAX_NUM;i++)
     {
-        for(int j=i+1;j<numberOfInvalidRanges;j++)
+        if(wm->ourRobot[i].isValid && this->id != i)
         {
-            if(angle[i][0]>angle[j][0])
+            if(wm->ball.pos.loc.dist(wm->ourRobot[i].pos.loc) < min)
             {
-                double temp=angle[i][0];
-                angle[i][0]=angle[j][0];
-                angle[j][0]=temp;
-                temp=angle[i][1];
-                angle[i][1]=angle[j][1];
-                angle[j][1]=temp;
+                min = wm->ourRobot[id].pos.loc.dist(wm->ourRobot[i].pos.loc);
+                index = i;
             }
         }
     }
+    return index;
 }
 
-void TacticTest::findValidRanges()
+void TacticTest::setKickerID(int index)
 {
-    numberOfValidRanges=0;
-    valid_angle[numberOfValidRanges][0]=dGoal;
-
-    for(int i=0;i<numberOfInvalidRanges+1;i++)
-    {
-        valid_angle[numberOfValidRanges][1]=angle[i][0];
-        valid_angle[numberOfValidRanges+1][0]=angle[i][1];
-        numberOfValidRanges++;
-    }
-
-    valid_angle[numberOfValidRanges-1][1]=uGoal;
+    this->id = index;
 }
 
-double TacticTest::findBestPoint()
+void TacticTest::timerEvent()
 {
-    findCriticalPlayer();
-    findInvalidRanges();
-    sortInvalidRanges();
-    findValidRanges();
-    double maxLength=0;
-    int index=-1;
-    for(int i=0;i<numberOfValidRanges;i++)
+    timer->stop();
+    if(firstKick)
     {
-        if(maxLength<valid_angle[i][1]-valid_angle[i][0])
+        if( (wm->ball.pos.loc-wm->ourRobot[id].pos.loc).length() > 200 )
         {
-            index=i;
-            maxLength=valid_angle[i][1]-valid_angle[i][0];
+            kicked = true;
+        }
+        else
+        {
+            firstKick = false;
         }
     }
-
-    return (valid_angle[index][0]+valid_angle[index][1])/2;
 }
