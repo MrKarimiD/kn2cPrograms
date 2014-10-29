@@ -72,6 +72,7 @@ const Vector2D oppGoalPost_L(MaxX, 350);
 const Vector2D oppGoalPost_R(MaxX, -350);
 const Vector2D oppGoalCC_L(MaxX, 175);
 const Vector2D oppGoalCC_R(MaxX, -175);
+const Vector2D oppGoalPenaltySpot(MaxX-850,0);
 
 //const Vector2D oppPenalty_Shoot = new Vector2D(3010, 500);
 
