@@ -21,6 +21,5 @@ private:
     TacticDefender* tDefenderL;
     TacticDefender* tDefenderR;
     TacticDefender* tDefenderM;
-    TacticAttacker* tAttacker;
 };
 #endif // PLAYKICKOFFOUR_H

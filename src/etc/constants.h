@@ -14,7 +14,7 @@
 #define CENTER 1
 #define LEFT 2
 
-#define NUMOFDEFENDERS 3
+#define NUMOFDEFENDERS 2
 
 
 // rules constants

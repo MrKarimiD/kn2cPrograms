@@ -24,11 +24,10 @@ PlayKickoffOur::PlayKickoffOur(WorldModel *worldmodel, QObject *parent) :
 
 int PlayKickoffOur::enterCondition()
 {
-//    if(wm->cmgs.ourKickoff())
-//        return 100;
-//    else
-//        return 0;
-    return 200000;
+    if(wm->cmgs.ourKickoff())
+        return 100;
+    else
+        return 0;
 }
 
 void PlayKickoffOur::execute()

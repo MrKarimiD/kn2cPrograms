@@ -19,13 +19,13 @@ RobotCommand TacticFixedPos::getCommand()
     switch(position)
     {
     case CENTER:
-        rc.fin_pos.loc = Vector2D(wm->ball.pos.loc.x - 200 , 0);
+        rc.fin_pos.loc = Vector2D(wm->ball.pos.loc.x - 500 , 0);
         break;
     case RIGHT:
-        rc.fin_pos.loc = Vector2D(wm->ball.pos.loc.x - 200 , 1550);
+        rc.fin_pos.loc = Vector2D(wm->ball.pos.loc.x - 500 , 1550);
         break;
     case LEFT:
-        rc.fin_pos.loc = Vector2D(wm->ball.pos.loc.x - 200 , -1550);
+        rc.fin_pos.loc = Vector2D(wm->ball.pos.loc.x - 500 , -1550);
         break;
     }
 
