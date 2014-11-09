@@ -24,10 +24,10 @@ PlayKickoffOpp::PlayKickoffOpp(WorldModel *worldmodel, QObject *parent) :
 
 int PlayKickoffOpp::enterCondition()
 {
-//    if(wm->cmgs.theirKickoff())
-//        return 100;
-//    else
-        return 200000;
+    if(wm->cmgs.theirKickoff())
+        return 100;
+    else
+        return 0;
 }
 
 void PlayKickoffOpp::execute()
@@ -81,8 +81,8 @@ void PlayKickoffOpp::execute()
         case 2:
             tactics[activeAgents.takeFirst()]=tDefenderR;
             tactics[activeAgents.takeFirst()]=tDefenderL;
-            tactics[activeAgents.takeFirst()]=tFixedPosL;
             tactics[activeAgents.takeFirst()]=tFixedPosR;
+            tactics[activeAgents.takeFirst()]=tFixedPosL;
             tactics[activeAgents.takeFirst()]=tFixedPosM;
             break;
         case 3:

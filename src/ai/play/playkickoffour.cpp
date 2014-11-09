@@ -72,8 +72,8 @@ void PlayKickoffOur::execute()
         case 2:
             tactics[activeAgents.takeFirst()]=tDefenderR;
             tactics[activeAgents.takeFirst()]=tDefenderL;
-            tactics[activeAgents.takeFirst()]=tFixedPosL;
             tactics[activeAgents.takeFirst()]=tFixedPosR;
+            tactics[activeAgents.takeFirst()]=tFixedPosL;
             tactics[activeAgents.takeFirst()]=tFixedPosM;
             break;
         case 3:
