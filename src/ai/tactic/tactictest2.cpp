@@ -18,13 +18,6 @@ RobotCommand TacticTest2::getCommand()
     canKick=false;
     rc.maxSpeed = 2;
 
-//    rc=goBehindBall();
-
-//    if(canKick /*&& wm->cmgs.canKickBall()*/)
-//    {
-//        rc.kickspeedx=5;
-//    }
-
     if(go)
     {
         if(state == 0)
@@ -35,36 +28,11 @@ RobotCommand TacticTest2::getCommand()
             Position p = wm->kn->AdjustKickPoint(v, Field::oppGoalCenter);
 
             rc.fin_pos = p;
-//            float deg=atan((-rc.fin_pos.loc.y+wm->ball.pos.loc.y)/(-rc.fin_pos.loc.x+wm->ball.pos.loc.x));
-
-//            if(rc.fin_pos.loc.x > wm->ball.pos.loc.x)
-//            {
-//                if(rc.fin_pos.loc.y > wm->ball.pos.loc.y)
-//                    deg = M_PI + deg;
-//                else
-//                {
-//                    deg = -M_PI + deg;
-//                }
-//            }
 
             if(wm->kn->IsReadyForKick(wm->ourRobot[id].pos, p, wm->ball.pos.loc))
             {
                 rc.kickspeedx = 5;//150;
-                //qDebug()<<"Kick It";
             }
-
-//            rc.fin_pos.dir = deg;
-//            float dist = sqrt(pow(wm->ourRobot[id].pos.loc.x-wm->ball.pos.loc.x,2) + pow(wm->ourRobot[id].pos.loc.y-wm->ball.pos.loc.y,2));
-//            qDebug()<<"dist:"<<dist;
-//            if(fabs(dist) <= (ROBOT_RADIUS/2)+ROBOT_RADIUS)
-//            {
-//                state = 1;
-//                if(wm->kn->CanKick(wm->ourRobot[id].pos,wm->ball.pos.loc))
-//                {
-//                    rc.kickspeedx = 5;
-//                    qDebug()<<"Kick It";
-//                }
-//            }
         }
         else if(state == 1)
         {
@@ -72,30 +40,13 @@ RobotCommand TacticTest2::getCommand()
             if(canKick)
             {
                 rc.kickspeedx = 5;
-                qDebug()<<"Kick It";
             }
         }
-
-        //qDebug()<<"state:"<<state;
     }
     else
     {
-            rc.fin_pos = wm->ourRobot[id].pos;
+        rc.fin_pos = wm->ourRobot[id].pos;
     }
-//    else
-//    {
-//        if(fabs(wm->ball.vel.loc.length()) > 0.25 )
-//        {
-
-//            qDebug()<<"IF----------2";
-//        }
-//        else
-//        {
-//                rc.fin_pos = wm->ourRobot[id].pos;
-//                qDebug()<<"IF----------3";
-//        }
-//    }
-    //qDebug()<<"speed:"<<wm->ball.vel.loc.length();
 
     rc.useNav = true;
     rc.isBallObs = false;
@@ -234,11 +185,11 @@ RobotCommand TacticTest2::goBehindBall()
     }
 
 
-   if(!wm->kn->ReachedToPos(wm->ourRobot[id].pos, rc.fin_pos, 20, 2))
-   {
-       double test=findBestPoint();
-       rc.fin_pos.dir=test;
-   }
+    if(!wm->kn->ReachedToPos(wm->ourRobot[id].pos, rc.fin_pos, 20, 2))
+    {
+        double test=findBestPoint();
+        rc.fin_pos.dir=test;
+    }
     rc.fin_pos.loc= {wm->ball.pos.loc.x-100*cos(deg),wm->ball.pos.loc.y-100*sin(deg)};
 
     if(wm->kn->ReachedToPos(wm->ourRobot[id].pos, rc.fin_pos, 10, 4))

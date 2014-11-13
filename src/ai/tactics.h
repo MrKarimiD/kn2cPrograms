@@ -18,5 +18,6 @@
 #include "tactic/tacticfixedpos.h"
 #include "tactic/tactictechnical.h"
 #include "tactic/tacticpenaltykicker.h"
+#include "tactic/tactickicker.h"
 
 #endif // TACTICS_H

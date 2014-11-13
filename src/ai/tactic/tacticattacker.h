@@ -17,6 +17,9 @@ public:
     RobotCommand goBehindBall();
     double findBestPoint();
 
+    bool go;
+    int state;
+
 private:
     QList<int> important_opp_agents;
     QList<int> important_our_agents;

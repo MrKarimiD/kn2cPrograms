@@ -24,6 +24,15 @@ QList<int> Knowledge::ActiveAgents()
     return ans;
 }
 
+QList<int> Knowledge::ActiveOppAgents()
+{
+    QList<int> ans;
+    for(int i=0; i< PLAYERS_MAX_NUM; i++)
+        if(_wm->oppRobot[i].isValid)
+            ans.append(i);
+    return ans;
+}
+
 QList<int> Knowledge::findNearestTo(Vector2D loc)
 {
     QMap<double, int> smap;
@@ -207,6 +216,25 @@ bool Knowledge::ReachedToPos(Vector2D current, Vector2D desired, double distThre
     {
         return false;
     }
+}
+
+bool Knowledge::agentIsFree(int index)
+{
+    QList<int> oppAgents = ActiveOppAgents();
+    bool isFree = true;
+
+    while( !oppAgents.isEmpty() )
+    {
+        int indexOPP = oppAgents.takeFirst();
+        if( (_wm->ourRobot[index].pos.loc-_wm->oppRobot[indexOPP].pos.loc).length() < DangerDist)
+        {
+            isFree = false;
+        }
+
+        if(!isFree)
+            break;
+    }
+    return isFree;
 }
 
 bool Knowledge::ReachedToPos(Position current, Position desired, double distThreshold, double degThreshold)

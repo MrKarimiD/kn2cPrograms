@@ -16,6 +16,8 @@
 
 #define NUMOFDEFENDERS 2
 
+#define DangerDist 300
+
 
 // rules constants
 #define ALLOW_NEAR_BALL_RANGE 600

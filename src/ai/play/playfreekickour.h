@@ -13,14 +13,14 @@ public:
     virtual int enterCondition();
 
 private:
+    int numberOfDef;
     TacticGoalie*   tGolie;
-    TacticFixedPos* tFixedPosM;
-    TacticFixedPos* tFixedPosL;
-    TacticFixedPos* tFixedPosR;
     TacticDefender* tDefenderLeft;
     TacticDefender* tDefenderRight;
     TacticDefender* tDefenderMid;
-    TacticAttacker* tAttacker;
+    TacticAttacker* tAttacker1;
+    TacticAttacker* tAttacker2;
+    TacticKicker* tPasser;
 };
 
 #endif // PLAYFREEKICKOUR_H

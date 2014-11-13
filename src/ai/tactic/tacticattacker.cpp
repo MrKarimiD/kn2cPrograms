@@ -14,19 +14,66 @@ RobotCommand TacticAttacker::getCommand()
     RobotCommand rc;
     if(!wm->ourRobot[id].isValid) return rc;
 
-//    canKick=false;
-    rc.maxSpeed = 1.5;
-
-    rc=goBehindBall();
-
-    if(canKick && wm->cmgs.canKickBall())
+    if(wm->ourRobot[id].Role == AgentRole::AttackerLeft)
     {
-        rc.kickspeedx=5;
+        rc.maxSpeed = 1.5;
+
+        rc=goBehindBall();
+
+        if(canKick && wm->cmgs.canKickBall())
+        {
+            rc.kickspeedx=5;
+        }
+
+        rc.useNav = true;
+        rc.isBallObs = false;
+        rc.isKickObs = true;
+
+    }
+    else if(wm->ourRobot[id].Role == AgentRole::Receiver)
+    {
+        canKick=false;
+        rc.maxSpeed = 2;
+
+        if(go)
+        {
+            if(state == 0)
+            {
+                Vector2D v;
+                v = wm->kn->PredictDestination(wm->ourRobot[this->id].pos.loc,
+                        wm->ball.pos.loc,rc.maxSpeed,wm->ball.vel.loc);
+                Position p = wm->kn->AdjustKickPoint(v, Field::oppGoalCenter);
+
+                rc.fin_pos = p;
+
+                if(wm->kn->IsReadyForKick(wm->ourRobot[id].pos, p, wm->ball.pos.loc))
+                {
+                    rc.kickspeedx = 5;//150;
+                }
+            }
+            else if(state == 1)
+            {
+                rc = goBehindBall();
+                if(canKick)
+                {
+                    rc.kickspeedx = 5;
+                }
+            }
+        }
+        else
+        {
+            rc.fin_pos = wm->ourRobot[id].pos;
+        }
+
+        rc.useNav = true;
+        rc.isBallObs = true;
+        rc.isKickObs = true;
+    }
+    else if(wm->ourRobot[id].Role == AgentRole::NoRole)
+    {
+        rc.fin_pos = wm->ourRobot[id].pos;
     }
 
-    rc.useNav = true;
-    rc.isBallObs = false;
-    rc.isKickObs = true;
     return rc;
 }
 
@@ -161,11 +208,11 @@ RobotCommand TacticAttacker::goBehindBall()
     }
 
 
-   if(!wm->kn->ReachedToPos(wm->ourRobot[id].pos, rc.fin_pos, 20, 2))
-   {
-       double test=findBestPoint();
-       rc.fin_pos.dir=test;
-   }
+    if(!wm->kn->ReachedToPos(wm->ourRobot[id].pos, rc.fin_pos, 20, 2))
+    {
+        double test=findBestPoint();
+        rc.fin_pos.dir=test;
+    }
     rc.fin_pos.loc= {wm->ball.pos.loc.x-100*cos(deg),wm->ball.pos.loc.y-100*sin(deg)};
 
     if(wm->kn->ReachedToPos(wm->ourRobot[id].pos, rc.fin_pos, 10, 4))

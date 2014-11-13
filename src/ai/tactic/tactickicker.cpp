@@ -1,8 +1,8 @@
-#include "tactictest.h"
+#include "tactickicker.h"
 
 
-TacticTest::TacticTest(WorldModel *worldmodel, QObject *parent) :
-    Tactic("TacticTest", worldmodel, parent)
+TacticKicker::TacticKicker(WorldModel *worldmodel, QObject *parent) :
+    Tactic("TacticKicker", worldmodel, parent)
 {
     canKick = false;
     firstKick = false;
@@ -11,7 +11,7 @@ TacticTest::TacticTest(WorldModel *worldmodel, QObject *parent) :
     connect(timer,SIGNAL(timeout()),this,SLOT(timerEvent()));
 }
 
-RobotCommand TacticTest::getCommand()
+RobotCommand TacticKicker::getCommand()
 {
     RobotCommand rc;
     if(!wm->ourRobot[id].isValid) return rc;
@@ -47,7 +47,7 @@ RobotCommand TacticTest::getCommand()
     return rc;
 }
 
-RobotCommand TacticTest::goBehindBall()
+RobotCommand TacticKicker::goBehindBall()
 {
     RobotCommand rc;
     canKick=false;
@@ -66,7 +66,7 @@ RobotCommand TacticTest::goBehindBall()
     return rc;
 }
 
-int TacticTest::findBestPlayerForPass()
+int TacticKicker::findBestPlayerForPass()
 {
     int index = -1;
     double min = 10000;
@@ -84,24 +84,25 @@ int TacticTest::findBestPlayerForPass()
     while ( !freeAgents.isEmpty() )
     {
         int i = freeAgents.takeFirst();
-        if(wm->ourRobot[i].isValid && this->id != i)
+        if(wm->ourRobot[i].isValid && this->id != i && i != wm->ref_goalie_our)
         {
-            if( (wm->ball.pos.loc-wm->ourRobot[i].pos.loc).length() < min)
+            if(wm->ball.pos.loc.dist(wm->ourRobot[i].pos.loc) < min)
             {
-                min = (wm->ball.pos.loc-wm->ourRobot[i].pos.loc).length();
+                min = wm->ourRobot[id].pos.loc.dist(wm->ourRobot[i].pos.loc);
                 index = i;
             }
         }
     }
+    //qDebug()<<"Pass Receiver is "<<index;
     return index;
 }
 
-void TacticTest::setKickerID(int index)
+void TacticKicker::setKickerID(int index)
 {
     this->id = index;
 }
 
-bool TacticTest::isFree(int index)
+bool TacticKicker::isFree(int index)
 {
     QList<int> oppAgents = wm->kn->ActiveOppAgents();
     bool isFree = true;
@@ -120,7 +121,7 @@ bool TacticTest::isFree(int index)
     return isFree;
 }
 
-void TacticTest::timerEvent()
+void TacticKicker::timerEvent()
 {
     timer->stop();
     if(firstKick)

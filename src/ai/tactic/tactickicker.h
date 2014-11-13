@@ -1,14 +1,13 @@
-#ifndef TACTICTEST_H
-#define TACTICTEST_H
+#ifndef TACTICKICKER_H
+#define TACTICKICKER_H
 
 #include "tactic.h"
-#define DangerDist 300
 
-class TacticTest : public Tactic
+class TacticKicker : public Tactic
 {
     Q_OBJECT
 public:
-    explicit TacticTest(WorldModel *worldmodel, QObject *parent = 0);
+    explicit TacticKicker(WorldModel *worldmodel, QObject *parent = 0);
     virtual RobotCommand getCommand();
 
     RobotCommand goBehindBall();
@@ -27,4 +26,4 @@ private slots:
 
 };
 
-#endif // TACTICTEST_H
+#endif // TACTICKICKER_H
